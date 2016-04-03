@@ -6,25 +6,9 @@ Loading and Preprocessing the data
 
 No transformation required from the basic data analysis
 
-Q1. What is the mean total number of steps taken per day?
+Q1. What is the total number of steps taken per day?
 
-Step 1: Creating Histogram of steps data
-
-    hist(actdata$steps)
-
-![](PA1_template_files/figure-markdown_strict/unnamed-chunk-2-1.png)<!-- -->
-
-Step 2: calculating mean and meadian value of steps data
-
-    actmean <- mean(actdata$steps, na.rm = TRUE)
-    actmedian <- median(actdata$steps, na.rm = TRUE)
-
-    #mean value is 37.3826
-    #median value is 0
-
-What is the average daily activity pattern?
-
-Step 1: Get the daily average for each interval
+Step 1: Calculating total number of steps taken each day
 
     library(dplyr)
 
@@ -38,6 +22,28 @@ Step 1: Get the daily average for each interval
     ## The following objects are masked from 'package:base':
     ## 
     ##     intersect, setdiff, setequal, union
+
+    plotdata <- actdata %>% group_by(date) %>% summarise(sum(steps, na.rm=TRUE))
+
+    colnames(plotdata) <- c("date", "TotalSteps")
+
+Step 2: Creating Histogram of steps each day
+
+    hist(plotdata$TotalSteps)
+
+![](PA1_template_files/figure-markdown_strict/unnamed-chunk-3-1.png)<!-- -->
+
+Step 3: calculating mean and meadian value of steps data
+
+    actmean <- mean(actdata$steps, na.rm = TRUE)
+    actmedian <- median(actdata$steps, na.rm = TRUE)
+
+    #mean value is 37.3826
+    #median value is 0
+
+What is the average daily activity pattern?
+
+Step 1: Get the daily average for each interval
 
     plotdata <- actdata %>% group_by(interval) %>% summarise(mean(steps, na.rm=TRUE))
 
@@ -106,7 +112,7 @@ number of steps and comparing it with old data
 
     hist(ModData$steps)
 
-![](PA1_template_files/figure-markdown_strict/unnamed-chunk-7-1.png)<!-- -->
+![](PA1_template_files/figure-markdown_strict/unnamed-chunk-8-1.png)<!-- -->
 
     #histogram seems different from the one with original data
     #frequency changed for certain values because of additional data for 
@@ -149,4 +155,4 @@ across weekdays and weekends
     library(lattice)
     xyplot(meansteps ~ interval | Day, data = plotdata2, type = "l")
 
-![](PA1_template_files/figure-markdown_strict/unnamed-chunk-9-1.png)<!-- -->
+![](PA1_template_files/figure-markdown_strict/unnamed-chunk-10-1.png)<!-- -->

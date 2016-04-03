@@ -13,14 +13,24 @@ actdata <- read.csv("activity.csv")
 ```
 No transformation required from the basic data analysis
 
-Q1. What is the mean total number of steps taken per day?
+Q1. What is the total number of steps taken per day?
 
-Step 1: Creating Histogram of steps data
+Step 1: Calculating total number of steps taken each day
+
 ```{r}
-hist(actdata$steps)
+library(dplyr)
+plotdata <- actdata %>% group_by(date) %>% summarise(sum(steps, na.rm=TRUE))
+
+colnames(plotdata) <- c("date", "TotalSteps")
 ```
 
-Step 2: calculating mean and meadian value of steps data
+
+Step 2: Creating Histogram of steps each day
+```{r}
+hist(plotdata$TotalSteps)
+```
+
+Step 3: calculating mean and meadian value of steps data
 
 ```{r actdata}
 actmean <- mean(actdata$steps, na.rm = TRUE)
@@ -36,7 +46,6 @@ What is the average daily activity pattern?
 Step 1: Get the daily average for each interval
 
 ```{r}
-library(dplyr)
 plotdata <- actdata %>% group_by(interval) %>% summarise(mean(steps, na.rm=TRUE))
 
 #Stores the intervals and mean steps in the plotdata dataframe
