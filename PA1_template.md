@@ -1,78 +1,86 @@
----
-title: "PA1_template"
-author: "mindR"
-date: "April 3, 2016"
-output: html_document
----
-
 Loading and Preprocessing the data
-```{r}
-actdata <- read.csv("activity.csv")
 
-#loading the data and storing it in actdata variable
-```
+    actdata <- read.csv("activity.csv")
+
+    #loading the data and storing it in actdata variable
+
 No transformation required from the basic data analysis
 
 Q1. What is the mean total number of steps taken per day?
 
 Step 1: Creating Histogram of steps data
-```{r}
-hist(actdata$steps)
-```
+
+    hist(actdata$steps)
+
+![](PA1_template_files/figure-markdown_strict/unnamed-chunk-2-1.png)<!-- -->
 
 Step 2: calculating mean and meadian value of steps data
 
-```{r actdata}
-actmean <- mean(actdata$steps, na.rm = TRUE)
-actmedian <- median(actdata$steps, na.rm = TRUE)
+    actmean <- mean(actdata$steps, na.rm = TRUE)
+    actmedian <- median(actdata$steps, na.rm = TRUE)
 
-#mean value is 37.3826
-#median value is 0
-```
-
+    #mean value is 37.3826
+    #median value is 0
 
 What is the average daily activity pattern?
 
 Step 1: Get the daily average for each interval
 
-```{r}
-library(dplyr)
-plotdata <- actdata %>% group_by(interval) %>% summarise(mean(steps, na.rm=TRUE))
+    library(dplyr)
 
-#Stores the intervals and mean steps in the plotdata dataframe
-```
+    ## 
+    ## Attaching package: 'dplyr'
 
-Step 2: Time series plot for the steps data averages across days for each interval
+    ## The following objects are masked from 'package:stats':
+    ## 
+    ##     filter, lag
 
-```{r plotdata}
-plot(plotdata, type="l")
+    ## The following objects are masked from 'package:base':
+    ## 
+    ##     intersect, setdiff, setequal, union
 
-#plots the data and the average steps for each time interval can be seen
-```
+    plotdata <- actdata %>% group_by(interval) %>% summarise(mean(steps, na.rm=TRUE))
+
+    #Stores the intervals and mean steps in the plotdata dataframe
+
+Step 2: Time series plot for the steps data averages across days for
+each interval
+
+    plot(plotdata, type="l")
+
+![](PA1_template_files/figure-markdown_strict/plotdata-1.png)<!-- -->
+
+    #plots the data and the average steps for each time interval can be seen
 
 Step 3: To find the interval with maximum average steps
 
-```{r}
-#can be found using max function
+    #can be found using max function
 
-#changing the column names of plotdata dataframe to make it more usable
-colnames(plotdata) <- c("interval", "meansteps")
+    #changing the column names of plotdata dataframe to make it more usable
+    colnames(plotdata) <- c("interval", "meansteps")
 
-plotdata[plotdata$meansteps==max(plotdata$meansteps),]
+    plotdata[plotdata$meansteps==max(plotdata$meansteps),]
 
-# interval with max average steps is 835
-```
+    ## Source: local data frame [1 x 2]
+    ## 
+    ##   interval meansteps
+    ##      (int)     (dbl)
+    ## 1      835  206.1698
+
+    # interval with max average steps is 835
 
 Imputing missing values
 
 Step 1: calculate and report the total missing values
 
-```{r}
-checkdata <- is.na (actdata$steps)
-table(checkdata)
+    checkdata <- is.na (actdata$steps)
+    table(checkdata)
 
-#total missing values 2304
-```
+    ## checkdata
+    ## FALSE  TRUE 
+    ## 15264  2304
+
+    #total missing values 2304
 
 Step 2: Strategy to fill in the missing steps values
 
@@ -80,62 +88,65 @@ Replacing the NAs with the equivalent mean values for each intervals
 
 Step 3: Creating a new dataset with filled NAs for each intervals
 
-```{r}
-#function to replace the NA values and assigning it to new dataset #ModData
+    #function to replace the NA values and assigning it to new dataset #ModData
 
-rep_NA <- function() {
-  i <- 0
-  tempData <- actdata
-  for (i in which(is.na(tempData$steps))) {
-    tempData$steps[i] <- plotdata$meansteps[which(plotdata$interval==tempData$interval[i])]
-  }
-  tempData
-}
+    rep_NA <- function() {
+      i <- 0
+      tempData <- actdata
+      for (i in which(is.na(tempData$steps))) {
+        tempData$steps[i] <- plotdata$meansteps[which(plotdata$interval==tempData$interval[i])]
+      }
+      tempData
+    }
 
-ModData <- rep_NA()
-```
+    ModData <- rep_NA()
 
-Step 4: Histogram of new dataset and checking the mean and median total number of steps and comparing it with old data
+Step 4: Histogram of new dataset and checking the mean and median total
+number of steps and comparing it with old data
 
-```{r}
-hist(ModData$steps)
+    hist(ModData$steps)
 
-#histogram seems different from the one with original data
-#frequency changed for certain values because of additional data for 
-#blank values
+![](PA1_template_files/figure-markdown_strict/unnamed-chunk-7-1.png)<!-- -->
 
-mean(ModData$steps)
-median(ModData$steps)
+    #histogram seems different from the one with original data
+    #frequency changed for certain values because of additional data for 
+    #blank values
 
-#mean 37.3826
-#median 0
-#same as the original data, since missing values replaced by mean itself
-```
+    mean(ModData$steps)
 
-Are there any differences in activity patterns between weekdays and weekends?
+    ## [1] 37.3826
+
+    median(ModData$steps)
+
+    ## [1] 0
+
+    #mean 37.3826
+    #median 0
+    #same as the original data, since missing values replaced by mean itself
+
+Are there any differences in activity patterns between weekdays and
+weekends?
 
 Step 1: adding a weekday column to the modified data
 
-```{r}
-#converting the date field into date class
-ModData$date <- as.Date(ModData$date)
+    #converting the date field into date class
+    ModData$date <- as.Date(ModData$date)
 
-weekdays1 <- c("Monday", "Tuesday", "Wednesday", "Thursday", "Friday")
+    weekdays1 <- c("Monday", "Tuesday", "Wednesday", "Thursday", "Friday")
 
-#adding a Day column 
-ModData$Day <- factor((weekdays(ModData$date) %in% weekdays1), levels = c(FALSE,TRUE), labels = c("weekend", "weekday"))
-```
+    #adding a Day column 
+    ModData$Day <- factor((weekdays(ModData$date) %in% weekdays1), levels = c(FALSE,TRUE), labels = c("weekend", "weekday"))
 
-Step 2: creating a time series plot for average number of steps averaged across weekdays and weekends
+Step 2: creating a time series plot for average number of steps averaged
+across weekdays and weekends
 
-```{r}
-#creating the dataframe for plotting interval vs mean steps
-plotdata2 <- ModData %>% group_by(interval, Day) %>% summarise(mean(steps, na.rm=TRUE))
+    #creating the dataframe for plotting interval vs mean steps
+    plotdata2 <- ModData %>% group_by(interval, Day) %>% summarise(mean(steps, na.rm=TRUE))
 
-colnames(plotdata2) <- c("interval", "Day", "meansteps")
+    colnames(plotdata2) <- c("interval", "Day", "meansteps")
 
-#creating the timesharing plot
-library(lattice)
-xyplot(meansteps ~ interval | Day, data = plotdata2, type = "l")
-```
+    #creating the timesharing plot
+    library(lattice)
+    xyplot(meansteps ~ interval | Day, data = plotdata2, type = "l")
 
+![](PA1_template_files/figure-markdown_strict/unnamed-chunk-9-1.png)<!-- -->

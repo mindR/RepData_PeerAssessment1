@@ -2,7 +2,7 @@
 title: "PA1_template"
 author: "mindR"
 date: "April 3, 2016"
-output: html_document
+output: md_document
 ---
 
 Loading and Preprocessing the data
