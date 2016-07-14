@@ -1,0 +1,104 @@
+---
+title: "Peer Assessment 1"
+author: "mindR"
+date: "July 14, 2016"
+output: html_document
+---
+
+```{r Loading and Preprocessing the data}
+
+###reading the data
+actdata <- read.csv("activity.csv")
+
+```
+
+
+```{r Mean total number of steps taken per day}
+library(dplyr)
+
+###Steps per day
+
+StepsPerDay <- actdata %>% group_by(date) %>% summarise(sum(steps, na.rm=TRUE))
+colnames(StepsPerDay) <- c("Date", "Steps")
+
+###histogram of steps taken per day
+hist(StepsPerDay$Steps, main = "Histogram of total steps taken each day", xlab = "Total Steps", )
+
+###calculating mean and meadian value of steps data
+actmean <- mean(actdata$steps, na.rm = TRUE)
+actmedian <- median(actdata$steps, na.rm = TRUE)
+
+```
+
+
+```{r The average daily activity pattern}
+###Mean steps for each interval
+
+IntervalData <- actdata %>% group_by(interval) %>% summarise(mean(steps, na.rm=TRUE))
+colnames(IntervalData) <- c("Time interval", "Mean Steps")
+
+###Time series plot for the steps data averages across days for each interval
+
+plot(IntervalData, type="l", main="Average steps taken in each interval")
+
+###Calculate interval with maximum mean steps
+
+IntervalData[IntervalData$`Mean Steps`==max(IntervalData$`Mean Steps`),]
+
+```
+
+
+```{r Imputing missing step values}
+
+###Checking the number of missing values
+
+checkdata <- is.na (actdata$steps)
+table(checkdata)
+
+###Replacing the NAs with the equivalent mean values for each intervals
+###creating a new dataset ModData with replaced values
+
+rep_NA <- function() {
+  i <- 0
+  tempData <- actdata
+    for (i in which(is.na(tempData$steps))) {
+        tempData$steps[i] <- IntervalData$`Mean Steps`[which(IntervalData$`Time interval`==tempData$interval[i])]
+      }
+      tempData
+    }
+
+ModData <- rep_NA()
+
+###checking new mean and median values
+
+mean(ModData$steps)
+median(ModData$steps)
+
+```
+
+
+
+```{r Comparing Weekday and Weekend activity}
+
+###adding a day column to identify weekdays and weekends
+
+ModData$date <- as.Date(ModData$date)
+
+weekdays1 <- c("Monday", "Tuesday", "Wednesday", "Thursday", "Friday")
+
+ModData$Day <- factor((weekdays(ModData$date) %in% weekdays1), levels = c(FALSE,TRUE), labels = c("weekend", "weekday"))
+
+colnames(ModData) <- c("Steps", "Date", "Interval", "Day")
+
+###plot for average number of steps each day across weekdays and weekends
+
+DayData <- ModData %>% group_by(Interval, Day) %>% summarise(mean(Steps, na.rm=TRUE))
+
+colnames(DayData) <- c("interval", "Day", "meansteps")
+
+###creating the timesharing plot
+library(lattice)
+xyplot(meansteps ~ interval | Day, data = DayData, type = "l", as.table=TRUE)
+
+```
+
