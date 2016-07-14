@@ -1,162 +1,104 @@
-Loading and Preprocessing the data
+---
+title: "Peer Assessment 1"
+author: "mindR"
+date: "July 14, 2016"
+output: html_document
+---
 
-    actdata <- read.csv("activity.csv")
+```{r Loading and Preprocessing the data}
 
-    #loading the data and storing it in actdata variable
+###reading the data
+actdata <- read.csv("activity.csv")
 
-No transformation required from the basic data analysis
+```
 
-Q1. What is the total number of steps taken per day?
 
-Step 1: Calculating total number of steps taken each day
+```{r Mean total number of steps taken per day}
+library(dplyr)
 
-    library(dplyr)
+###Steps per day
 
-    ## 
-    ## Attaching package: 'dplyr'
+StepsPerDay <- actdata %>% group_by(date) %>% summarise(sum(steps, na.rm=TRUE))
+colnames(StepsPerDay) <- c("Date", "Steps")
 
-    ## The following objects are masked from 'package:stats':
-    ## 
-    ##     filter, lag
+###histogram of steps taken per day
+hist(StepsPerDay$Steps, main = "Histogram of total steps taken each day", xlab = "Total Steps", )
 
-    ## The following objects are masked from 'package:base':
-    ## 
-    ##     intersect, setdiff, setequal, union
+###calculating mean and meadian value of steps data
+actmean <- mean(actdata$steps, na.rm = TRUE)
+actmedian <- median(actdata$steps, na.rm = TRUE)
 
-    plotdata <- actdata %>% group_by(date) %>% summarise(sum(steps, na.rm=TRUE))
+```
 
-    colnames(plotdata) <- c("date", "TotalSteps")
 
-Step 2: Creating Histogram of steps each day
+```{r The average daily activity pattern}
+###Mean steps for each interval
 
-    hist(plotdata$TotalSteps)
+IntervalData <- actdata %>% group_by(interval) %>% summarise(mean(steps, na.rm=TRUE))
+colnames(IntervalData) <- c("Time interval", "Mean Steps")
 
-![](PA1_template_files/figure-markdown_strict/unnamed-chunk-3-1.png)<!-- -->
+###Time series plot for the steps data averages across days for each interval
 
-Step 3: calculating mean and meadian value of steps data
+plot(IntervalData, type="l", main="Average steps taken in each interval")
 
-    actmean <- mean(actdata$steps, na.rm = TRUE)
-    actmedian <- median(actdata$steps, na.rm = TRUE)
+###Calculate interval with maximum mean steps
 
-    #mean value is 37.3826
-    #median value is 0
+IntervalData[IntervalData$`Mean Steps`==max(IntervalData$`Mean Steps`),]
 
-What is the average daily activity pattern?
+```
 
-Step 1: Get the daily average for each interval
 
-    plotdata2 <- actdata %>% group_by(interval) %>% summarise(mean(steps, na.rm=TRUE))
+```{r Imputing missing step values}
 
-    #Stores the intervals and mean steps in the plotdata dataframe
+###Checking the number of missing values
 
-Step 2: Time series plot for the steps data averages across days for
-each interval
+checkdata <- is.na (actdata$steps)
+table(checkdata)
 
-    plot(plotdata2, type="l")
+###Replacing the NAs with the equivalent mean values for each intervals
+###creating a new dataset ModData with replaced values
 
-![](PA1_template_files/figure-markdown_strict/unnamed-chunk-5-1.png)<!-- -->
-
-    #plots the data and the average steps for each time interval can be seen
-
-Step 3: To find the interval with maximum average steps
-
-    #can be found using max function
-
-    #changing the column names of plotdata dataframe to make it more usable
-    colnames(plotdata2) <- c("interval", "meansteps")
-
-    plotdata2[plotdata2$meansteps==max(plotdata2$meansteps),]
-
-    ## Source: local data frame [1 x 2]
-    ## 
-    ##   interval meansteps
-    ##      (int)     (dbl)
-    ## 1      835  206.1698
-
-    # interval with max average steps is 835
-
-Imputing missing values
-
-Step 1: calculate and report the total missing values
-
-    checkdata <- is.na (actdata$steps)
-    table(checkdata)
-
-    ## checkdata
-    ## FALSE  TRUE 
-    ## 15264  2304
-
-    #total missing values 2304
-
-Step 2: Strategy to fill in the missing steps values
-
-Replacing the NAs with the equivalent mean values for each intervals
-
-Step 3: Creating a new dataset with filled NAs for each intervals
-
-    #function to replace the NA values and assigning it to new dataset #ModData
-
-    rep_NA <- function() {
-      i <- 0
-      tempData <- actdata
-      for (i in which(is.na(tempData$steps))) {
-        tempData$steps[i] <- plotdata2$meansteps[which(plotdata2$interval==tempData$interval[i])]
+rep_NA <- function() {
+  i <- 0
+  tempData <- actdata
+    for (i in which(is.na(tempData$steps))) {
+        tempData$steps[i] <- IntervalData$`Mean Steps`[which(IntervalData$`Time interval`==tempData$interval[i])]
       }
       tempData
     }
 
-    ModData <- rep_NA()
+ModData <- rep_NA()
 
-Step 4: Histogram of new dataset and checking the mean and median total
-number of steps and comparing it with old data
+###checking new mean and median values
 
-    plotdata3 <- ModData %>% group_by(date) %>% summarise(sum(steps, na.rm=TRUE))
+mean(ModData$steps)
+median(ModData$steps)
 
-    colnames(plotdata3) <- c("date", "TotalSteps")
+```
 
-    hist(plotdata3$TotalSteps)
 
-![](PA1_template_files/figure-markdown_strict/unnamed-chunk-9-1.png)<!-- -->
 
-    #histogram seems different from the one with original data
-    #frequency changed for certain values because of additional data for 
-    #blank values
+```{r Comparing Weekday and Weekend activity}
 
-    mean(ModData$steps)
+###adding a day column to identify weekdays and weekends
 
-    ## [1] 37.3826
+ModData$date <- as.Date(ModData$date)
 
-    median(ModData$steps)
+weekdays1 <- c("Monday", "Tuesday", "Wednesday", "Thursday", "Friday")
 
-    ## [1] 0
+ModData$Day <- factor((weekdays(ModData$date) %in% weekdays1), levels = c(FALSE,TRUE), labels = c("weekend", "weekday"))
 
-    #mean 37.3826
-    #median 0
-    #same as the original data, since missing values replaced by mean itself
+colnames(ModData) <- c("Steps", "Date", "Interval", "Day")
 
-Are there any differences in activity patterns between weekdays and
-weekends?
+###plot for average number of steps each day across weekdays and weekends
 
-Step 1: adding a weekday column to the modified data
+DayData <- ModData %>% group_by(Interval, Day) %>% summarise(mean(Steps, na.rm=TRUE))
 
-    #converting the date field into date class
-    ModData$date <- as.Date(ModData$date)
+colnames(DayData) <- c("interval", "Day", "meansteps")
 
-    weekdays1 <- c("Monday", "Tuesday", "Wednesday", "Thursday", "Friday")
+###creating the timesharing plot
+library(lattice)
+xyplot(meansteps ~ interval | Day, data = DayData, type = "l", as.table=TRUE)
 
-    #adding a Day column 
-    ModData$Day <- factor((weekdays(ModData$date) %in% weekdays1), levels = c(FALSE,TRUE), labels = c("weekend", "weekday"))
+```
 
-Step 2: creating a time series plot for average number of steps averaged
-across weekdays and weekends
-
-    #creating the dataframe for plotting interval vs mean steps
-    plotdata4 <- ModData %>% group_by(interval, Day) %>% summarise(mean(steps, na.rm=TRUE))
-
-    colnames(plotdata4) <- c("interval", "Day", "meansteps")
-
-    #creating the timesharing plot
-    library(lattice)
-    xyplot(meansteps ~ interval | Day, data = plotdata4, type = "l")
-
-![](PA1_template_files/figure-markdown_strict/unnamed-chunk-11-1.png)<!-- -->
