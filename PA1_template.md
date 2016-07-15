@@ -171,7 +171,7 @@ colnames(DayData) <- c("interval", "Day", "meansteps")
 
 ###creating the timesharing plot
 library(lattice)
-xyplot(meansteps ~ interval | Day, data = DayData, type = "l", as.table=TRUE)
+xyplot(meansteps ~ interval | Day, data = DayData, type = "l", layout=c(1,2))
 ```
 
 ![](PA1_template_files/figure-html/Comparing Weekday and Weekend activity-1.png)
