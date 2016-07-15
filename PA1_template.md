@@ -4,7 +4,7 @@ July 14, 2016
 
 
 ```r
-###reading the data
+###Loading the data
 actdata <- read.csv("activity.csv")
 ```
 
@@ -32,29 +32,42 @@ library(dplyr)
 ```
 
 ```r
-###Steps per day
+###Calculating Mean total number of steps taken per day
 
 StepsPerDay <- actdata %>% group_by(date) %>% summarise(sum(steps, na.rm=TRUE))
 colnames(StepsPerDay) <- c("Date", "Steps")
 
 ###histogram of steps taken per day
-hist(StepsPerDay$Steps, main = "Histogram of total steps taken each day", xlab = "Total Steps", )
+hist(StepsPerDay$Steps, main = "Histogram of total steps taken each day", xlab = "Total Steps")
 ```
 
-![](PA1_template_files/figure-html/Mean total number of steps taken per day-1.png)
+![](PA1_template_files/figure-html/unnamed-chunk-2-1.png)
 
 ```r
 ###calculating mean and meadian value of steps data
-actmean <- mean(actdata$steps, na.rm = TRUE)
-actmedian <- median(actdata$steps, na.rm = TRUE)
+mean(actdata$steps, na.rm = TRUE)
+```
+
+```
+## [1] 37.3826
+```
+
+```r
+median(actdata$steps, na.rm = TRUE)
+```
+
+```
+## [1] 0
 ```
 
 
 
 ```r
+###The average daily activity pattern
 ###Mean steps for each interval
 
 IntervalData <- actdata %>% group_by(interval) %>% summarise(mean(steps, na.rm=TRUE))
+
 colnames(IntervalData) <- c("Time interval", "Mean Steps")
 
 ###Time series plot for the steps data averages across days for each interval
@@ -62,10 +75,10 @@ colnames(IntervalData) <- c("Time interval", "Mean Steps")
 plot(IntervalData, type="l", main="Average steps taken in each interval")
 ```
 
-![](PA1_template_files/figure-html/The average daily activity pattern-1.png)
+![](PA1_template_files/figure-html/unnamed-chunk-3-1.png)
 
 ```r
-###Calculate interval with maximum mean steps
+###Calculate 5 min interval with maximum mean steps
 
 IntervalData[IntervalData$`Mean Steps`==max(IntervalData$`Mean Steps`),]
 ```
@@ -81,6 +94,7 @@ IntervalData[IntervalData$`Mean Steps`==max(IntervalData$`Mean Steps`),]
 
 
 ```r
+###Imputing missing step values
 ###Checking the number of missing values
 
 checkdata <- is.na (actdata$steps)
@@ -94,8 +108,9 @@ table(checkdata)
 ```
 
 ```r
-###Replacing the NAs with the equivalent mean values for each intervals
+###Replacing the NA values with the equivalent mean values for each intervals
 ###creating a new dataset ModData with replaced values
+
 
 rep_NA <- function() {
   i <- 0
@@ -124,6 +139,15 @@ median(ModData$steps)
 ```
 ## [1] 0
 ```
+
+```r
+###histogram of steps taken per day with modified data
+#ModData$steps <- round(ModData$steps)
+
+hist(ModData$steps, main = "Histogram of total steps taken each day", xlab = "Total Steps")
+```
+
+![](PA1_template_files/figure-html/unnamed-chunk-4-1.png)
 
 
 

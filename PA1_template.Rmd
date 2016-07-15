@@ -7,58 +7,61 @@ output:
     keep_md: yes
 ---
 
-```{r Loading and Preprocessing the data}
+```{r }
 
-###reading the data
+###Loading the data
 actdata <- read.csv("activity.csv")
 
 ```
 
 
-```{r Mean total number of steps taken per day}
+```{r }
 library(dplyr)
 
-###Steps per day
+###Calculating Mean total number of steps taken per day
 
 StepsPerDay <- actdata %>% group_by(date) %>% summarise(sum(steps, na.rm=TRUE))
 colnames(StepsPerDay) <- c("Date", "Steps")
 
 ###histogram of steps taken per day
-hist(StepsPerDay$Steps, main = "Histogram of total steps taken each day", xlab = "Total Steps", )
+hist(StepsPerDay$Steps, main = "Histogram of total steps taken each day", xlab = "Total Steps")
 
 ###calculating mean and meadian value of steps data
-actmean <- mean(actdata$steps, na.rm = TRUE)
-actmedian <- median(actdata$steps, na.rm = TRUE)
+mean(actdata$steps, na.rm = TRUE)
+median(actdata$steps, na.rm = TRUE)
 
 ```
 
 
-```{r The average daily activity pattern}
+```{r }
+###The average daily activity pattern
 ###Mean steps for each interval
 
 IntervalData <- actdata %>% group_by(interval) %>% summarise(mean(steps, na.rm=TRUE))
+
 colnames(IntervalData) <- c("Time interval", "Mean Steps")
 
 ###Time series plot for the steps data averages across days for each interval
 
 plot(IntervalData, type="l", main="Average steps taken in each interval")
 
-###Calculate interval with maximum mean steps
+###Calculate 5 min interval with maximum mean steps
 
 IntervalData[IntervalData$`Mean Steps`==max(IntervalData$`Mean Steps`),]
 
 ```
 
 
-```{r Imputing missing step values}
-
+```{r }
+###Imputing missing step values
 ###Checking the number of missing values
 
 checkdata <- is.na (actdata$steps)
 table(checkdata)
 
-###Replacing the NAs with the equivalent mean values for each intervals
+###Replacing the NA values with the equivalent mean values for each intervals
 ###creating a new dataset ModData with replaced values
+
 
 rep_NA <- function() {
   i <- 0
@@ -75,6 +78,11 @@ ModData <- rep_NA()
 
 mean(ModData$steps)
 median(ModData$steps)
+
+###histogram of steps taken per day with modified data
+#ModData$steps <- round(ModData$steps)
+
+hist(ModData$steps, main = "Histogram of total steps taken each day", xlab = "Total Steps")
 
 ```
 
